@@ -1,28 +1,48 @@
 import pandas as pd
+import itertools
 
 datas = []
 datas_name = []
 
 def print_selection():
-    print( "Database practice" )
+    print( "====Database practice====" )
     print( "0  : EXIT" )
     print( "1  : Load xlsx" )
-    print( "=======================" )
+    print( "=========================" )
     print( "2  : Select" )
     print( "3  : Project" )
     print( "4  : Rename" )
     print( "5  : Cartesian product" )
     print( "6  : Union" )
     print( "7  : Difference" )
-    print( "=======================" )
-    print( "8  : Delete database" )
+    print( "=========================" )
+    print( "8  : Delete table" )
     print( "9  : Print all database" )
-    print( "10 : Help", end="\n\n" )
+    print( "10 : Print single database" )
+    print( "11 : Save single file" )
+    print( "12 : Help", end="\n\n" )
 
 def print_help():
     print( "Welcom to Database testing system" )
     print( "1. (1: load xlsx): import a xlsx file, when entering file name please do not enter \".xslx\"" )
     print( "1. (2: select): import a xlsx file at most 2 files, if import the third file it will delete the first one" )
+
+def save_or_not():
+    save = input("Do you want to save the result ? ( Y (yes) / N (no) ) : ")
+    if save != "Y" and save != "N" and save != "y" and save != "n":
+        print("Invalid command", end="\n\n")
+            
+    if save == "Y" or save == "y":
+        save = input("Please enter the new table name : ")
+    else:
+        save = None  
+    
+    return save
+
+def write_file( name ):
+    index = datas_name.index(name)
+    datas[index].to_excel(name + '.xlsx', index=False)
+    print("File saved!", end="\n\n")
     
 def insert_data( data, name ):
     if name in datas_name:
@@ -56,7 +76,6 @@ def select_data_value(name, compare, attribute, value, save):
         result = table[table[attribute] < value]
 
     if save != None:
-        new_name = input("Enter the new name for new table: ")
         insert_data( result, new_name)
   
     return result
@@ -94,7 +113,27 @@ def rename_data(name, new_name):
     table = datas[datas_name.index(name)]
     insert_data( table, new_name )
 
+def cartesian_product(table1, table2, save):
+    index1 = datas_name.index(table1)
+    index2 = datas_name.index(table2)
+    table1 = datas[index1]
+    table2 = datas[index2]
+    
+    original_column_names = table1.columns.tolist() + table2.columns.tolist()
+    
+    result = []
+    for i in range(len(table1)):
+        for j in range(len(table2)):
+            row1 = table1.iloc[i, :].tolist()
+            row2 = table2.iloc[j, :].tolist()
+            result.append(row1 + row2)
+    
+    result = pd.DataFrame(result, columns=original_column_names)
 
+    if save is not None:
+        insert_data(result, save)
+
+    return result
 
 def delete_data(name):
     index = datas_name.index(name)
@@ -142,7 +181,7 @@ if __name__ == "__main__":
             mode = int(input( "Do you want to campare with 1. column or 2. value : " ))
             if mode != 1 and mode != 2:
                 print( "Invalid command", end="\n\n" )
-                break
+                continue
                 
             if mode == 1:
                 #conpare with column
@@ -164,16 +203,7 @@ if __name__ == "__main__":
                     print("Invalid command", end="\n\n")
                     continue
                 
-                save = input("Do you want to save the result ? ( Y (yes) / N (no) ) : ")
-                if save != "Y" and save != "N":
-                    print("Invalid command", end="\n\n")
-                    continue
-                
-                if save == "Y":
-                    save = input("Pleasse enter the new table name : ")
-                else:
-                    save = None
-                
+                save = save_or_not()
                 result = select_data_column( name, compare, column1, column2, save )
                 
             elif mode == 2:
@@ -207,15 +237,7 @@ if __name__ == "__main__":
                 elif type_of_attribute == "object":
                     value = str(value)
                 
-                save = input("Do you want to save the result ? ( Y (yes) / N (no) ) : ")
-                if save != "Y" and save != "N":
-                    print("Invalid command", end="\n\n")
-                    continue
-                
-                if save == "Y":
-                    save = input("Pleasse enter the new table name : ")
-                else:
-                    save = None
+                save = save_or_not()
                 
                 result = select_data_value( name, compare, attribute, value, save )
                 
@@ -243,15 +265,7 @@ if __name__ == "__main__":
                     print("Error: Attribute not in the table. Please try again.", end="\n\n")
                     break
                 
-            save = input("Do you want to save the result ? ( Y (yes) / N (no) ) : ")
-            if save != "Y" and save != "N":
-                print("Invalid command", end="\n\n")
-                continue
-            
-            if save == "Y":
-                save = input("Pleasse enter the new table name : ")
-            else:
-                save = None
+            save = save_or_not()
                 
             result = project_data(name, attributes, save)
             print( "=======================================" )
@@ -267,7 +281,21 @@ if __name__ == "__main__":
             rename_data(table, new_name)
             
         elif command == 5:
-            print("Cartesian product...")
+            table1 = input("Which table do you want to Cartision ? : ")
+            if table1 not in datas_name:
+                print("Error: table not exist. Please try again.", end="\n\n")
+                continue
+            
+            table2 = input("Which table do you want to Cartision with ? : ")
+            if table2 not in datas_name:
+                print("Error: table not exist. Please try again.", end="\n\n")
+                continue
+            
+            save = save_or_not()
+            result = cartesian_product( table1, table2, save )
+            print( "=======================================" )
+            print(result)
+            print( "=======================================", end="\n\n" ) 
         
         elif command == 6:
             print("Union...")
@@ -296,6 +324,24 @@ if __name__ == "__main__":
                     print( "==================================", end="\n\n" )
             
         elif command == 10:
+            name = input("Which table do you want to print ? : ")
+            if name not in datas_name:
+                print("Error: table not exist. Please try again.", end="\n\n")
+                continue
+            print( "==================================" )
+            print( "Name: ", end=" " )
+            print(name, end="\n\n")
+            print(datas[datas_name.index(name)])
+            print( "==================================", end="\n\n" )
+            
+        elif command == 11:
+            name = input("Which table do you want to save ? : ")
+            if name not in datas_name:
+                print("Error: table not exist. Please try again.", end="\n\n")
+                continue
+            write_file(name)
+            
+        elif command == 12:
             print_help()
             
         else:
