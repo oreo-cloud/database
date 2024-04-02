@@ -1,24 +1,23 @@
 import pandas as pd
-import itertools
 
 datas = []
 datas_name = []
 
 def print_selection():
-    print( "====Database practice====" )
+    print( "======Database practice======" )
     print( "0  : EXIT" )
     print( "1  : Load xlsx" )
-    print( "=========================" )
+    print( "=============================" )
     print( "2  : Select" )
     print( "3  : Project" )
     print( "4  : Rename" )
     print( "5  : Cartesian product" )
     print( "6  : Union" )
     print( "7  : Set difference" )
-    print( "=========================" )
+    print( "=============================" )
     print( "8  : Set intersection" )
     print( "9  : Division" )
-    print( "=========================" )
+    print( "=============================" )
     print( "10 : Delete table" )
     print( "11 : Print all database" )
     print( "12 : Print single database" )
@@ -27,11 +26,23 @@ def print_selection():
 
 def print_help():
     print( "Welcom to Database testing system" )
-    print( "(1: Load xlsx): import a xlsx file, when entering file name please do not include \".xslx\"." )
-    print( "(2: Select): You can select by column or compare with value." )
-    print( "(3: Project): You can project the table by selecting the attributes." )
-    print( "(4: Rename): You can rename the table." )
-    print( "(5: Cartesian product): You can do Cartesian product with two tables." )
+    print( "(0:  EXIT): quit system." )
+    print( "(1:  Load xlsx): import a xlsx file, when entering file name please do not include \".xslx\"." )
+    print( "================================================================================================" )
+    print( "(2:  Select): You can select by column or compare with value." )
+    print( "(3:  Project): You can project the table by selecting the attributes." )
+    print( "(4:  Rename): You can rename the table." )
+    print( "(5:  Cartesian product): You can do Cartesian product between two tables." )
+    print( "(6:  Union): You can do Union between two tables." )
+    print( "(7:  Set difference): You can set difference between two tables." )
+    print( "================================================================================================" )
+    print( "(8:  Set intersection): You can set intersection between two tables." )
+    print( "(9:  Division): You can division between two tables." )
+    print( "================================================================================================" )
+    print( "(10: Delete table): You can choose the table you want to delete." )
+    print( "(11: Print all database): print out all the table you store in system." )
+    print( "(12: Print single database): print out the table you select." )
+    print( "(13: Save single file): save the table you select, the name of file was customize." )
     print( end="\n\n" )
 
 def save_or_not():
@@ -97,7 +108,7 @@ def select_data_value( name, compare, attribute, value, save ):
         result = table[table[attribute] < value]
 
     if save != None:
-        insert_data( result, new_name)
+        insert_data( result, save)
   
     return result
 
@@ -195,18 +206,24 @@ def set_intersection( table1, table2, save ):
 
     return result
 
-def division( table1, table2, save ):
-    table1 = search_table( table1 )
-    table2 = search_table( table2 )
-
-    mask = table1.isin(table2).all(axis=1)
+def division( name1, name2, save ):
+    table1 = search_table( name1 )
+    table2 = search_table( name2 )
+    column1 = table1.columns.tolist()
+    column2 = table2.columns.tolist()
     
-    # 選擇這些元素
-    result = table1[mask]
+    print( column1, column2 )
+    if not all(elem in column1 for elem in column2):
+        print( f"Error: The column of {name2} is not in {name1}. Please try again.", end="\n\n" )
+        return None
     
-    if save is not None:
-        insert_data(result, save)
+        
 
+    result.reset_index(drop=True, inplace=True)
+    result = None
+
+    if save != None:
+        insert_data( result, save )
     return result
 
 def delete_data(name):
@@ -238,6 +255,7 @@ if __name__ == "__main__":
             
             if data is not None:
                 insert_data( data, filename )
+                print_result( data )
                 print( "file loaded!", end="\n\n" )
             else:
                 pass
@@ -245,7 +263,7 @@ if __name__ == "__main__":
         elif command == 2:
             name = input("Which table do you want to search ? : ")
             if name not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {name} not exist. Please try again.", end="\n\n")
                 continue
             
             value = None
@@ -263,12 +281,12 @@ if __name__ == "__main__":
                 # find the column name, if not exist, print error message
                 column1 = input("Which column do you choose ? :")
                 if column1 not in datas[datas_name.index(name)].columns:
-                    print("Error: Column not in the table. Please try again.", end="\n\n")
+                    print(f"Error: Column : {column1} not in the table. Please try again.", end="\n\n")
                     continue
                 # find the column name, if not exist, print error message
                 column2 = input( "Which column do you want to compare to ? :" )
                 if column2 not in datas[datas_name.index(name)].columns:
-                    print("Error: Column not in the table. Please try again.", end="\n\n")
+                    print(f"Error: Column : {column2} not in the table. Please try again.", end="\n\n")
                     continue
                 
                 print("Do you want to compare the data as greater than or less than the value?")
@@ -322,10 +340,14 @@ if __name__ == "__main__":
             attributes = []
             name = input("Which table do you want to project ? : ")
             if name not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {name} not exist. Please try again.", end="\n\n")
                 continue
             table = datas[datas_name.index(name)]
             while not finish:
+                if len( attributes ) >= len( table.columns ):
+                    print("All attributes have been selected. It will finished automatically.", end="\n\n")
+                    break
+                
                 print( "Which attribute do you want to project ?" )
                 attribute = input( "( if you finish entering attribute, please use 0 to finish it ) :" )
                 if attribute == "0":
@@ -334,8 +356,8 @@ if __name__ == "__main__":
                 if attribute in table.columns:
                     attributes.append(attribute)
                 else:
-                    print("Error: Attribute not in the table. Please try again.", end="\n\n")
-                    break
+                    print(f"Error: Attribute : {attribute} not in the table. Please try again.")
+                    continue
                 
             save = save_or_not()
                 
@@ -345,7 +367,7 @@ if __name__ == "__main__":
         elif command == 4:
             table = input("Which table do you want to rename ? : ")
             if table not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table} not exist. Please try again.", end="\n\n")
                 continue
             new_name = input("Enter the new name for the table: ")
             rename_data(table, new_name)
@@ -353,12 +375,12 @@ if __name__ == "__main__":
         elif command == 5:
             table1 = input("Which table do you want to use for the Cartesian product ? : ")
             if table1 not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table1} not exist. Please try again.", end="\n\n")
                 continue
             
             table2 = input(f"Which table do you want to use for the Cartesian product ( with table \"{table1}\" ) ? : ")
             if table2 not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table2} not exist. Please try again.", end="\n\n")
                 continue
             
             save = save_or_not()
@@ -368,12 +390,12 @@ if __name__ == "__main__":
         elif command == 6:
             table1 = input("Which table do you want to use for the Union ? : ")
             if table1 not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table1} not exist. Please try again.", end="\n\n")
                 continue
             
             table2 = input(f"Which table do you want to use for the Union ( with table \"{table1}\" ) ? : ")
             if table2 not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table2} not exist. Please try again.", end="\n\n")
                 continue
             
             save = save_or_not()
@@ -383,12 +405,12 @@ if __name__ == "__main__":
         elif command == 7:
             table1 = input("Which table do you want to use for the set difference ? : ")
             if table1 not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table1} not exist. Please try again.", end="\n\n")
                 continue
             
             table2 = input(f"Which table do you want to use for the set difference ( with table \"{table1}\" ) ? : ")
             if table2 not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table2} not exist. Please try again.", end="\n\n")
                 continue
             
             save = save_or_not()
@@ -398,12 +420,12 @@ if __name__ == "__main__":
         elif command == 8:
             table1 = input("Which table do you want to use for the set intersection ? : ")
             if table1 not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table1} not exist. Please try again.", end="\n\n")
                 continue
             
             table2 = input(f"Which table do you want to use for the set intersection ( with table \"{table1}\" ) ? : ")
             if table2 not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table2} not exist. Please try again.", end="\n\n")
                 continue
             
             save = save_or_not()
@@ -413,12 +435,12 @@ if __name__ == "__main__":
         elif command == 9:
             table1 = input("Which table do you want to use for the division ? : ")
             if table1 not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table1} not exist. Please try again.", end="\n\n")
                 continue
             
             table2 = input(f"Which table do you want to use for the set division ( with table \"{table1}\" ) ? : ")
             if table2 not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {table2} not exist. Please try again.", end="\n\n")
                 continue
             
             save = save_or_not()
@@ -428,7 +450,7 @@ if __name__ == "__main__":
         elif command == 10:
             name = input("Which table do you want to delete ? : ")
             if name not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {name} not exist. Please try again.", end="\n\n")
                 continue
             delete_data(name)
             print("Table deleted!", end="\n\n")
@@ -448,7 +470,7 @@ if __name__ == "__main__":
         elif command == 12:
             name = input("Which table do you want to print ? : ")
             if name not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {name} not exist. Please try again.", end="\n\n")
                 continue
             print( "==================================" )
             print( "Name: ", end=" " )
@@ -459,7 +481,7 @@ if __name__ == "__main__":
         elif command == 13:
             name = input("Which table do you want to save ? : ")
             if name not in datas_name:
-                print("Error: table not exist. Please try again.", end="\n\n")
+                print(f"Error: table {name} not exist. Please try again.", end="\n\n")
                 continue
             write_file(name)
             
