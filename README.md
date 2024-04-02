@@ -6,7 +6,7 @@ Welcom to Database testing system
 
 (1:  Load xlsx): import a xlsx file, when entering file name please do not include ".xslx".
 
-================================================================================================
+============================================================================================
 
 (2:  Select): You can select by column or compare with value.
 
@@ -20,13 +20,13 @@ Welcom to Database testing system
 
 (7:  Set difference): You can set difference between two tables.
 
-================================================================================================
+============================================================================================
 
 (8:  Set intersection): You can set intersection between two tables.
 
 (9:  Division): You can division between two tables.
 
-================================================================================================
+============================================================================================
 
 (10: Delete table): You can choose the table you want to delete.
 
