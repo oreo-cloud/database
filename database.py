@@ -1,6 +1,5 @@
 import pandas as pd
 import os
-import warnings
 
 datas = []
 datas_name = []
@@ -529,8 +528,3 @@ if __name__ == "__main__":
             # the message shouldn't include .
             print( f"\033[91mError: {ex}. Please try again.\033[0m", end="\n\n" )
             continue
-
-
-
-
-
